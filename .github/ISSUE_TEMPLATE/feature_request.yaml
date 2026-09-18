@@ -1,5 +1,5 @@
 ---
-name: ✨ Feature Request
+name: "✨ Feature request"
 description: Suggest a new feature for Kubara
 title: "[Feature]: "
 labels: ["feature request", "triage"]
@@ -8,33 +8,33 @@ body:
   - type: textarea
     id: summary
     attributes:
-      label: "📝 Description"
+      label: Problem
       description: |
-        Please read first <a target="_blank" href="https://github.com/kubara-io/kubara/blob/main/CONTRIBUTING.md">how to contribute to Kubara</a>.
-      placeholder: Briefly describe the feature you'd like to see. What problem does it solve?
+        Describe the problem, who has it, and how they work around it today.
+        Read the [contribution guide](https://github.com/kubara-io/kubara/blob/main/CONTRIBUTING.md) before filing an issue.
+      placeholder: I need to ... but ...
     validations:
       required: true
 
   - type: textarea
     id: use_case
     attributes:
-      label: 🎯 Use Case
-      description: Describe the scenario or workflow this feature would enable or improve.
-      placeholder: As a user, I want to...
+      label: Proposed solution
+      description: Describe the behaviour you want. Alternatives are welcome when they would solve the problem differently.
+      placeholder: Kubara should ...
     validations:
       required: true
 
   - type: textarea
     id: additional
     attributes:
-      label: 📎 Additional Context
-      description: Paste screenshots, links to related docs, issues, or prior art here.
+      label: Other context
+      description: Add screenshots, related issues, or prior art.
 
   - type: checkboxes
     id: checklist
     attributes:
-      label: ✅ Checklist
+      label: Before submitting
       options:
         - label: I have searched existing issues
           required: true
-        - label: This is not a duplicate

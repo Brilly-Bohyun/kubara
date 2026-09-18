@@ -1,5 +1,5 @@
 ---
-name: 🐛 Bug Report
+name: "🐛 Bug report"
 description: Report a bug in Kubara
 title: "[Bug]: "
 labels: ["bug", "triage"]
@@ -8,17 +8,18 @@ body:
   - type: textarea
     id: summary
     attributes:
-      label: "📝 Description"
+      label: Description
       description: |
-        Please read first <a target="_blank" href="https://github.com/kubara-io/kubara/blob/main/CONTRIBUTING.md">how to contribute to Kubara</a>.
-      placeholder: Briefly describe the bug. What is the problem you encountered?
+        Describe what happened, what you expected, and how it affects you.
+        Read the [contribution guide](https://github.com/kubara-io/kubara/blob/main/CONTRIBUTING.md) before filing an issue.
+      placeholder: Kubara did ... but I expected ...
     validations:
       required: true
 
   - type: textarea
     id: steps
     attributes:
-      label: 🧪 Steps to Reproduce
+      label: Steps to reproduce
       description: List clear steps to reproduce the issue.
       placeholder: |
         1. Run `kubara init`
@@ -30,8 +31,8 @@ body:
   - type: textarea
     id: environment
     attributes:
-      label: 💻 Environment
-      description: Provide relevant environment details.
+      label: Environment
+      description: Include the Kubara version and any details needed to reproduce the issue.
       placeholder: |
         - Kubara version: v1.4.2
         - Kubernetes version: 1.28 (EKS)
@@ -44,16 +45,15 @@ body:
   - type: textarea
     id: additional
     attributes:
-      label: 📎 Additional Context / Logs
-      description: Paste logs, screenshots, or links to related docs or issues here.
+      label: Logs or other context
+      description: Paste relevant logs, screenshots, or links. Remove secrets.
 
   - type: checkboxes
     id: checklist
     attributes:
-      label: ✅ Checklist
+      label: Before submitting
       options:
         - label: I have searched existing issues
           required: true
-        - label: I am using the latest version of Kubara
-        - label: The issue is reproducible
-        - label: This is not a duplicate
+        - label: I can reproduce this with the latest version of Kubara
+          required: false

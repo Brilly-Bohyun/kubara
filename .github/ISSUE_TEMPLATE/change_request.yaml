@@ -1,6 +1,6 @@
 ---
-name: ☂️ Request for Change
-description: Propose an major architectural improvement or refactor to existing Kubara behavior
+name: "☂️ Change proposal"
+description: Propose a substantial change to Kubara's design or behaviour
 title: "[RFC]: "
 labels: ["architecture", "triage"]
 assignees: []
@@ -8,24 +8,20 @@ body:
   - type: textarea
     id: summary
     attributes:
-      label: "📝 Summary"
-      description: Briefly describe the change you are proposing. What is the problem or limitation with the current behavior?
+      label: Problem
+      description: What does the current behaviour prevent or make difficult? Who is affected?
+      placeholder: The current ... makes it difficult to ...
     validations:
       required: true
   - type: textarea
     id: motivation
     attributes:
-      label: 🎯 Motivation
-      description: Describe the motivation behind this change. Why is it needed? What benefits does it provide to users or maintainers?
+      label: Scope
+      description: State what this proposal includes and what it deliberately leaves out. Keep related work separate if it does not need to ship with this change.
       value: |
-        ** The Problem **
-        Describe the current behavior and its limitations. What issues or pain points does it cause?
+        Includes:
 
-        ** Goals **
-        Describe the goals of this change. What are you trying to achieve with this improvement or ref
-
-        ** Out of Scope **
-        Describe any related problems or features that are out of scope for this change.
+        Excludes:
 
     validations:
       required: true
@@ -33,20 +29,17 @@ body:
   - type: textarea
     id: proposal
     attributes:
-      label: 💡 Proposal
-      description: Describe your proposed solution or improvement. How would you implement this change? What are the key design decisions or trade-offs?
+      label: Proposed change
+      description: Describe the design, affected areas, and trade-offs. Mention alternatives if they help explain the choice.
       value: |
-        ** Design **
-        Describe the high-level design of your proposed change. What components or modules would be affected? How would they interact?
+        Design:
 
-        ** Alternatives Considered **
-        Describe any alternative solutions you considered and why you rejected them.
+        Alternatives considered:
 
   - type: checkboxes
     id: checklist
     attributes:
-      label: ✅ Checklist
+      label: Before submitting
       options:
         - label: I have searched existing issues
           required: true
-        - label: This is not a duplicate

@@ -1,29 +1,18 @@
-## 📝 Summary
+## Summary
 <!-- Please read first: https://github.com/kubara-io/kubara/blob/main/CONTRIBUTING.md -->
-  
-<!-- What does this PR do? -->
+<!-- Explain what changed and why. Link related issues with "Closes #123". -->
 
-## 🧩 Type of change
-- [ ] 🔧 CLI / Go code
-- [ ] 📝 Documentation
-- [ ] 🧪 Test or CI change
-- [ ] ♻️ Refactor / cleanup
+## Change type
+- [ ] CLI or Go code
+- [ ] Documentation
+- [ ] Tests or CI
+- [ ] Refactor or cleanup
 
-## ⚠️ Is this a breaking change?
-- [ ] Yes, this change breaks existing functionality (explain in summary)
+## Breaking change
+- [ ] This changes existing behaviour. I explained the migration or impact above.
 
-## 🧪 Testing
-- [ ] CI passed
-- [ ] Manually tested (local/dev cluster)
-- [ ] Unit tested
-- [ ] Not tested (explain why below)
-  
-## 🔗 Additional Context / Related Issues / Tickets
-<!-- e.g. Closes #42, Related to #99 -->
-<!-- Add logs, screenshots, diagrams, or design notes. -->
+## How I tested it
+<!-- Name the commands you ran. Include manual checks where they add coverage. If you did not test, explain why. -->
 
-## ✅ Checklist
-- [ ] Code compiles and passes all tests
-- [ ] Linting and style checks pass
-- [ ] Comments added for complex logic
-- [ ] Documentation updated (if applicable)
+## Notes for reviewers
+<!-- Add screenshots, logs, design notes, or questions for reviewers. -->
