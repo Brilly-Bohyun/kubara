@@ -11,6 +11,7 @@ const (
 	ConfigVersionV1Alpha2 = "v1alpha2"
 	ConfigVersionV1Alpha3 = "v1alpha3"
 	ConfigVersionV1Alpha4 = "v1alpha4"
+	ConfigVersionV1Alpha5 = "v1alpha5"
 )
 
 const (
@@ -44,7 +45,7 @@ func SupportedTerraformProviders() []TerraformProvider {
 
 // Config is the root of the configuration structure.
 type Config struct {
-	Version          string    `json:"version,omitempty" yaml:"version,omitempty" jsonschema:"title=Config Version,description=The schema version of this config file.,enum=v1alpha4,default=v1alpha4"`
+	Version          string    `json:"version,omitempty" yaml:"version,omitempty" jsonschema:"title=Config Version,description=The schema version of this config file.,enum=v1alpha5,default=v1alpha5"`
 	BootstrapCatalog *string   `json:"bootstrapCatalog,omitempty" yaml:"bootstrapCatalog,omitempty" jsonschema:"title=Bootstrap Catalog,description=The global bootstrap catalog to use."`
 	Clusters         []Cluster `json:"clusters" yaml:"clusters" jsonschema:"title=Clusters,description=A list of cluster configurations."`
 }
@@ -60,8 +61,8 @@ type Cluster struct {
 	SSOTeam string `json:"ssoTeam,omitempty" yaml:"ssoTeam,omitempty" jsonschema:"title=SSO Team,description=The specific SSO team or sub-group allowed to access this cluster.,minLength=1"`
 
 	// Deprecated: use Networking.Ingress.ClassName. Retained for older catalogs.
-	IngressClassName string             `json:"ingressClassName,omitempty" yaml:"ingressClassName,omitempty" jsonschema:"-"`
-	Networking       *ClusterNetworking `json:"networking,omitempty" yaml:"networking,omitempty" jsonschema:"title=Networking,description=Routing settings consumed by catalog templates."`
+	IngressClassName string            `json:"ingressClassName,omitempty" yaml:"-" jsonschema:"-"`
+	Networking       ClusterNetworking `json:"networking,omitempty" yaml:"networking,omitempty" jsonschema:"title=Networking,description=Routing settings consumed by catalog templates."`
 
 	Terraform *Terraform       `json:"terraform,omitempty" yaml:"terraform,omitempty" jsonschema:"title=Terraform,description=Configuration for terraform resources."`
 	ArgoCD    ArgoCD           `json:"argocd" yaml:"argocd" jsonschema:"required,title=ArgoCD,description=Configuration for argoCD."`

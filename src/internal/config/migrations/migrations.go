@@ -15,6 +15,7 @@ const (
 	ConfigVersionV1Alpha2 = "v1alpha2"
 	ConfigVersionV1Alpha3 = "v1alpha3"
 	ConfigVersionV1Alpha4 = "v1alpha4"
+	ConfigVersionV1Alpha5 = "v1alpha5"
 )
 
 // Apply runs all registered schema and repository layout migrations.
@@ -48,12 +49,11 @@ func Apply(cwd string, config map[string]any) (bool, error) {
 		migrated = true
 	}
 
-	if config["version"] == ConfigVersionV1Alpha4 {
-		networkingMigrated, err := migrateIngressNetworking(config)
-		if err != nil {
-			return false, fmt.Errorf("migrate Ingress networking: %w", err)
+	if isV1Alpha4Config(config) {
+		if err := migrateV1Alpha4Config(config); err != nil {
+			return false, fmt.Errorf("migrate V1Alpha4 config: %w", err)
 		}
-		migrated = migrated || networkingMigrated
+		migrated = true
 	}
 	return migrated, nil
 }
@@ -76,6 +76,11 @@ func isV1Alpha2Config(raw map[string]any) bool {
 func isV1Alpha3Config(raw map[string]any) bool {
 	version, hasVersion := raw["version"]
 	return version == ConfigVersionV1Alpha3 && hasVersion
+}
+
+func isV1Alpha4Config(raw map[string]any) bool {
+	version, hasVersion := raw["version"]
+	return version == ConfigVersionV1Alpha4 && hasVersion
 }
 
 func clusterLabel(cluster map[string]any, clusterIndex int) string {
