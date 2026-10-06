@@ -183,7 +183,11 @@ Manage platform catalogs
 
 Create a custom catalog directory skeleton
 
->kubara catalog create CATALOG_NAME
+>kubara catalog create [--github-actions] [--gitlab-ci] CATALOG_NAME
+
+**--github-actions**: Include a GitHub Actions catalog validation workflow
+
+**--gitlab-ci**: Include a GitLab catalog validation pipeline
 
 **--help, -h**: show help
 
