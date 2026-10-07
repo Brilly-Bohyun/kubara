@@ -13,6 +13,8 @@ import (
 	"github.com/kubara-io/kubara/internal/envconfig"
 	"github.com/kubara-io/kubara/internal/helm"
 	"github.com/kubara-io/kubara/internal/k8s"
+	helmRelease "helm.sh/helm/v4/pkg/release/v1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"sigs.k8s.io/yaml"
 
 	"github.com/rs/zerolog/log"
@@ -339,6 +341,30 @@ func applyCRDs(ctx context.Context, client *k8s.Client, opts *Options, charts []
 	return nil
 }
 
+func applyStagedManifest(
+	ctx context.Context,
+	client *k8s.Client,
+	objects []*unstructured.Unstructured,
+	applyOpts k8s.ApplyOptions,
+) error {
+	for _, obj := range objects {
+		hook, ok := helm.ParseHook(obj)
+		if !applyOpts.DryRun && ok && helm.HasHookDeletePolicy(hook, helmRelease.HookBeforeHookCreation) {
+			if err := client.DeleteObjectAndWait(ctx, obj); err != nil {
+				return fmt.Errorf("recreate before apply %q \"%s/%s\": %w",
+					obj.GetKind(), obj.GetNamespace(), obj.GetName(), err)
+			}
+		}
+
+		if err := client.ApplyObject(ctx, obj, applyOpts); err != nil {
+			return fmt.Errorf("apply %q \"%s/%s\": %w",
+				obj.GetKind(), obj.GetNamespace(), obj.GetName(), err)
+		}
+	}
+
+	return nil
+}
+
 // bootstrapArgoCD performs the main ArgoCD installation
 func bootstrapArgoCD(ctx context.Context, client *k8s.Client, opts *Options, argoChart BootstrapChart) error {
 	log.Info().Msg("Bootstrapping ArgoCD")
@@ -364,6 +390,11 @@ func bootstrapArgoCD(ctx context.Context, client *k8s.Client, opts *Options, arg
 		return fmt.Errorf("template ArgoCD: %w", err)
 	}
 
+	plan, err := helm.PlanManifest(manifest)
+	if err != nil {
+		return fmt.Errorf("plan ArgoCD manifest: %w", err)
+	}
+
 	// Apply ArgoCD manifest
 	applyOpts := k8s.DefaultApplyOptions()
 	applyOpts.FieldManager = "kubara-argocd-bootstrap"
@@ -375,8 +406,22 @@ func bootstrapArgoCD(ctx context.Context, client *k8s.Client, opts *Options, arg
 		return nil
 	}
 
-	if err := client.ApplyManifest(ctx, manifest, applyOpts); err != nil {
-		return fmt.Errorf("apply ArgoCD manifest: %w", err)
+	stages := []struct {
+		name    string
+		objects []*unstructured.Unstructured
+	}{
+		{name: "pre-install", objects: plan.PreInstall},
+		{name: "main", objects: plan.Main},
+		{name: "post-install", objects: plan.PostInstall},
+	}
+
+	for _, stage := range stages {
+		if len(stage.objects) == 0 {
+			continue
+		}
+		if err := applyStagedManifest(ctx, client, stage.objects, applyOpts); err != nil {
+			return fmt.Errorf("apply %s stage: %w", stage.name, err)
+		}
 	}
 
 	log.Info().Msg("ArgoCD manifest applied successfully")

@@ -5,12 +5,15 @@ import (
 	"fmt"
 	"io"
 	"strings"
+	"time"
 
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/apimachinery/pkg/util/yaml"
 	"k8s.io/client-go/dynamic"
 )
@@ -54,35 +57,43 @@ func (c *Client) ApplyManifest(ctx context.Context, manifest []byte, opts ApplyO
 			continue // Skip empty documents
 		}
 
-		if err := c.applyObject(ctx, obj, opts); err != nil {
-			return fmt.Errorf("applying %q \"%s/%s\": %w",
-				obj.GetKind(), obj.GetNamespace(), obj.GetName(), err)
+		if err := c.ApplyObject(ctx, obj, opts); err != nil {
+			return err
 		}
 	}
 
 	return nil
 }
 
-// applyObject applies a single object using server-side apply
-func (c *Client) applyObject(ctx context.Context, obj *unstructured.Unstructured, opts ApplyOptions) error {
-	// Get GVR from the object
+// ResourceInterface returns the dynamic resource interface for the given object.
+func (c *Client) ResourceInterface(obj *unstructured.Unstructured) (dynamic.ResourceInterface, error) {
 	gvk := obj.GroupVersionKind()
-
-	// Find the REST mapping for this GVK
 	gvr, scope, err := c.getGVR(gvk)
 	if err != nil {
-		return fmt.Errorf("get GVR for %q: %w", gvk.String(), err)
+		return nil, fmt.Errorf("get GVR for %q: %w", gvk.String(), err)
 	}
 
-	// Get the appropriate resource interface
-	var dr dynamic.ResourceInterface
 	if scope == meta.RESTScopeNamespace {
-		if obj.GetNamespace() == "" {
-			obj.SetNamespace("default")
+		ns := obj.GetNamespace()
+		if ns == "" {
+			ns = "default"
 		}
-		dr = c.DynamicClient.Resource(gvr).Namespace(obj.GetNamespace())
-	} else {
-		dr = c.DynamicClient.Resource(gvr)
+		return c.DynamicClient.Resource(gvr).Namespace(ns), nil
+	}
+
+	return c.DynamicClient.Resource(gvr), nil
+}
+
+// ApplyObject applies a single object using server-side apply
+func (c *Client) ApplyObject(ctx context.Context, obj *unstructured.Unstructured, opts ApplyOptions) error {
+	if opts.FieldManager == "" {
+		opts.FieldManager = "kubara"
+	}
+
+	dr, err := c.ResourceInterface(obj)
+	if err != nil {
+		return fmt.Errorf("get resource interface for %q \"%s/%s\": %w",
+			obj.GetKind(), obj.GetNamespace(), obj.GetName(), err)
 	}
 
 	// Prepare apply options
@@ -98,7 +109,54 @@ func (c *Client) applyObject(ctx context.Context, obj *unstructured.Unstructured
 	// Server-side apply
 	_, err = dr.Apply(ctx, obj.GetName(), obj, applyOpts)
 	if err != nil {
-		return fmt.Errorf("server-side apply: %w", err)
+		return fmt.Errorf("server-side apply %q \"%s/%s\": %w",
+			obj.GetKind(), obj.GetNamespace(), obj.GetName(), err)
+	}
+
+	return nil
+}
+
+// DeleteObjectAndWait deletes the object and waits for foreground propagation to complete.
+func (c *Client) DeleteObjectAndWait(ctx context.Context, obj *unstructured.Unstructured) error {
+	dr, err := c.ResourceInterface(obj)
+	if err != nil {
+		return fmt.Errorf("get resource interface for %q \"%s/%s\": %w",
+			obj.GetKind(), obj.GetNamespace(), obj.GetName(), err)
+	}
+
+	propagation := metav1.DeletePropagationForeground
+
+	err = dr.Delete(ctx, obj.GetName(), metav1.DeleteOptions{
+		PropagationPolicy: &propagation,
+	})
+	if apierrors.IsNotFound(err) {
+		return nil
+	}
+	if err != nil {
+		return fmt.Errorf("delete existing object %q \"%s/%s\": %w",
+			obj.GetKind(), obj.GetNamespace(), obj.GetName(), err)
+	}
+
+	err = wait.PollUntilContextTimeout(
+		ctx,
+		time.Second,
+		time.Minute,
+		true,
+		func(ctx context.Context) (bool, error) {
+			_, err := dr.Get(ctx, obj.GetName(), metav1.GetOptions{})
+			if apierrors.IsNotFound(err) {
+				return true, nil
+			}
+			if err != nil {
+				return false, fmt.Errorf("check object deletion: %w", err)
+			}
+
+			return false, nil
+		},
+	)
+	if err != nil {
+		return fmt.Errorf("wait for object deletion %q \"%s/%s\": %w",
+			obj.GetKind(), obj.GetNamespace(), obj.GetName(), err)
 	}
 
 	return nil
