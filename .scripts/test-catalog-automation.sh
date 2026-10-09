@@ -38,7 +38,7 @@ clusters:
       - oci://ghcr.io/kubara-io/catalogs/general:3.0.0
 YAML
 cp "$tmp/work/config.yaml" "$tmp/original.yaml"
-update() { bash "$root/.scripts/kubara-catalog-update.sh" "$tmp/work"; }
+update() { bash "$root/src/cmd/kubara-catalog-update.sh" "$tmp/work"; }
 update
 [ "$(yq '.bootstrapCatalog' "$tmp/work/config.yaml")" = oci://ghcr.io/kubara-io/catalogs/bootstrap:1.10.0 ]
 [ "$(yq '.clusters[0].catalogs[0]' "$tmp/work/config.yaml")" = oci://ghcr.io/kubara-io/catalogs/general:1.10.0 ]
@@ -53,7 +53,7 @@ cmp "$tmp/updated.yaml" "$tmp/work/config.yaml"
 for failure in FAIL_TAGS FAIL_PULL FAIL_GENERATE; do
     cp "$tmp/original.yaml" "$tmp/work/config.yaml"
     : > "$CALL_LOG"
-    if env "$failure=true" bash "$root/.scripts/kubara-catalog-update.sh" "$tmp/work"; then
+    if env "$failure=true" bash "$root/src/cmd/kubara-catalog-update.sh" "$tmp/work"; then
         echo "Expected failure: $failure" >&2
         exit 1
     fi
@@ -94,7 +94,7 @@ fi
 KUBARA_ARGS='[]' bash -e -o pipefail "$tmp/action-run.sh"
 [ ! -s "$CALL_LOG" ]
 # Run the GitLab publication block with no network or real git mutations.
-yq -r '."kubara-update".script[-1]' "$root/docs/content/4_building_your_platform/gitlab-catalog-update.yaml" > "$tmp/publish.sh"
+yq -r '."kubara-update".script[-1]' "$root/src/cmd/gitlab-catalog-update.yaml" > "$tmp/publish.sh"
 cat > "$tmp/bin/git" <<'STUB'
 #!/usr/bin/env bash
 set -eu

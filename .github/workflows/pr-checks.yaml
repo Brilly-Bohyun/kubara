@@ -9,7 +9,6 @@ on:
       - '.scripts/**'
       - 'action.yml'
       - 'install.sh'
-      - 'docs/content/4_building_your_platform/*-catalog-update.yaml'
       - '.github/helm-profiles/**'
   pull_request:
     branches:
@@ -20,7 +19,6 @@ on:
       - '.scripts/**'
       - 'action.yml'
       - 'install.sh'
-      - 'docs/content/4_building_your_platform/*-catalog-update.yaml'
       - '.github/helm-profiles/**'
   workflow_dispatch:
 
@@ -56,7 +54,7 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Check shell scripts
         run: |
-          shellcheck .scripts/kubara-catalog-update.sh .scripts/test-catalog-automation.sh .scripts/install-oras.sh
+          shellcheck src/cmd/kubara-catalog-update.sh .scripts/test-catalog-automation.sh src/cmd/install-oras.sh
           sh -n install.sh
       - name: Test catalog automation
         run: bash .scripts/test-catalog-automation.sh

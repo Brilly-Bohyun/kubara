@@ -38,12 +38,17 @@ Provide any environment variables needed by your templates through CI variables 
 
 ## Step 2: add the pipeline
 
-Copy `.scripts/kubara-catalog-update.sh` from kubara into the same path in your GitOps repository.
-Use the same reviewed kubara revision for scripts and pipeline examples.
+Run `kubara init` with the option for your Git hosting provider.
+The command generates the pipeline and its required scripts in your working directory.
+Existing files are preserved, including when using `--overwrite`. The `--prep` option only prepares the environment file.
 
 === "GitHub Actions"
 
-    Copy [github-catalog-update.yaml](github-catalog-update.yaml) to `.github/workflows/kubara-update.yaml`.
+    ```bash
+    kubara init --github-actions
+    ```
+
+    This creates `.github/workflows/kubara-update.yaml` and `.scripts/kubara-catalog-update.sh`.
 
     Enable **Allow GitHub Actions to create and approve pull requests** in the repository's Actions settings.
     The workflow requires `contents: write` and `pull-requests: write`.
@@ -56,8 +61,13 @@ Use the same reviewed kubara revision for scripts and pipeline examples.
 
 === "GitLab CI"
 
-    Copy [gitlab-catalog-update.yaml](gitlab-catalog-update.yaml) to `.gitlab-ci.yml`, or include it from your existing pipeline.
-    Also copy kubara's root `install.sh` and `.scripts/install-oras.sh` to the same paths in your repository.
+    ```bash
+    kubara init --gitlab-ci
+    ```
+
+    This creates `.gitlab-ci.yml`, `.scripts/kubara-catalog-update.sh`, and `.scripts/install-oras.sh`.
+    Pin the installer download URL to a reviewed kubara revision.
+    If `.gitlab-ci.yml` already exists, generate the pipeline in a separate working directory and merge the job into your existing pipeline.
 
     Use a Linux Docker runner. Create a masked `KUBARA_UPDATE_TOKEN` project access token in **Settings → CI/CD → Variables**.
     Give it `api` and `write_repository` scopes and permission to push the automation branch.

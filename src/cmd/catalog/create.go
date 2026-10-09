@@ -54,10 +54,6 @@ func NewCatalogCreate() *cli.Command {
 	return cmd
 }
 
-func CreateCatalog(catalogName string) error {
-	return createCatalog(catalogName, false, false)
-}
-
 func createCatalog(catalogName string, githubActions, gitlabCI bool) (err error) {
 	if !catalogTypes.RFC1123Label.MatchString(catalogName) {
 		return fmt.Errorf("catalog name must adhere to rfc 1123: must be 1-63 characters, start with a lowercase letter, contain only lowercase letters, digits, or '-', and end with a letter or digit")
